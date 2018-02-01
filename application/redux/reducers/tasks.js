@@ -1,7 +1,8 @@
 const defaultState = [
-    { id: '1', text: 'First Item', completed: false, date: 'NewDate', deadline: new Date() },
-    { id: '2', text: 'Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item Second item ', completed: false, date: 'NewDate', deadline: 5 },
-    { id: '3', text: 'Third Item', completed: true, date: 'NewDate', deadline: 1 }
+    { id: '1', text: 'Present in mobile computing class', completed: false, date: 'NewDate', deadline: 9999999999999, position: {latitude: 48.3351, longitude: 14.324}, mapVisible: false  },
+    { id: '2', text: 'Eat a snack', completed: false, date: 'NewDates', deadline: 9999999999999, position: {latitude: 48.33511, longitude: 14.3241}, mapVisible: true  },
+    { id: '3', text: 'Prepare mobile computing presentation ', completed: true, date: 'NewDate', deadline: 9999999999999, position: {latitude: 48.3351, longitude: 14.329}, mapVisible: true  },
+    { id: '4', text: 'Book train ticket', completed: false, date: 'NewDate', deadline: 9999999999999, position: {latitude: 48.3358, longitude: 14.321}, mapVisible: true }
 ];
 
 export default function tasksReducer (state = defaultState, action) {

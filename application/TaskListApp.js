@@ -6,9 +6,14 @@ import ActionButton from 'react-native-action-button';
 import * as taskActions from './redux/actions/tasks';
 import ViewItem from './components/ViewItem';
 import TaskList from './components/TaskList';
-import { PermissionsAndroid, ScrollView } from 'react-native';
+import { PermissionsAndroid, ScrollView, TouchableHighlight } from 'react-native';
 import firebase from 'react-native-firebase';
 import MapView from 'react-native-maps';
+import geo from './components/Geofencing'
+
+import TabNav from './navigation/TabNavigator'
+
+import TheHeader from './components/Header'
 
 class Application extends Component {
   constructor (props) {
@@ -18,34 +23,22 @@ class Application extends Component {
       modalVisible: false,
       modalItem: {},
       mapVisible: true,
-      
-      onPressMarker: {
+      watcherPosition: {
         
-         latitude: 48.3358,
-         longitude: 14.321, 
-
-        
-      },
+             latitude: 48.3358,
+             longitude: 14.321, 
+            },
+     
 
 
 
     }
   }
-
-
-// componentWillMount(){
-//   this.ref.collection("todos").get().then(function(querySnapshot) {
-//     querySnapshot.forEach(function(doc) {
-//         // doc.data() is never undefined for query doc snapshots
-//         console.log(doc.id, " => ", doc.data());
-//     });
-//   });
-// }
-componentDidMount() {
+    componentWillMount() {
     this.watchId = navigator.geolocation.watchPosition(
       (position) => {
         this.setState({
-          onPressMarker:{
+          watcherPosition:{
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           } ,
@@ -58,8 +51,44 @@ componentDidMount() {
   }
 
   componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchId);
+    
   }
+
+// componentWillMount(){
+//   this.ref.collection("todos").get().then(function(querySnapshot) {
+//     querySnapshot.forEach(function(doc) {
+//         // doc.data() is never undefined for query doc snapshots
+//         console.log(doc.id, " => ", doc.data());
+//     });
+//   });
+// }
+
+geofencing(currentPosLat, WatcherPosLat, currentPosLong, WatcherPosLong, message){
+      let PlusWatcherPosLat = WatcherPosLat+0.001
+      let MinusWatcherPosLat = WatcherPosLat-0.001
+
+      let PlusWatcherPosLong = WatcherPosLong+0.001
+      let MinusWatcherPosLong = WatcherPosLong-0.001
+
+      console.log(currentPosLat, PlusWatcherPosLat)
+      console.log(currentPosLat, MinusWatcherPosLat)
+      console.log(currentPosLong, PlusWatcherPosLong)
+      console.log(currentPosLong, MinusWatcherPosLong)
+       if(currentPosLat<=PlusWatcherPosLat&&
+          currentPosLat>=MinusWatcherPosLat&&
+
+        currentPosLong<=PlusWatcherPosLong&&
+        currentPosLong>=MinusWatcherPosLong){
+      console.log('SUCCESS')
+      Alert.alert("Your position is close to: ", message)
+
+              
+      }
+      else{
+        console.log('ERROR',WatcherPosLat, currentPosLat )
+      }
+    }
+
   onSaveItem (item) {
       this.props.saveItem(item);
       this.setState({ modalVisible: false });
@@ -82,49 +111,22 @@ componentDidMount() {
 
   render() {
 
-console.log('onPressMarker',this.state.onPressMarker.latitude)
+
 
     return (
-      <View style={styles.container}>
-      <MapView 
-      onPress={e => this.setState({onPressMarker: e.nativeEvent.coordinate})}
-      style={{ flex: 1, width: "100%" }}
-      region={{
-      latitude: this.state.onPressMarker.latitude,
-      longitude: this.state.onPressMarker.longitude,
-      latitudeDelta: 0.03,
-      longitudeDelta: 0.03,
-    }}>
-{/*  <MapView.Marker
-    
-    title={'yolo'}
-      coordinate={{
-        latitude: this.state.onPressMarker.latitude,
-      longitude: this.state.onPressMarker.longitude,
-      }}
-    />*/}
-    {this.state.mapVisible ? 
-    <MapView.Circle 
-    center={{
-      latitude: this.state.onPressMarker.latitude,
-      longitude:this.state.onPressMarker.longitude,}}
-      strokeWidth={2}
-      strokeColor='red'
-      radius={150}
-      fill='red'
-    >
-    </MapView.Circle>
 
-     : null}
 
-    </MapView>
-      
+      <ScrollView >
+      {/*<TabNav/>*/}
+
       
       
 
       <Text>{this.state.longitude}</Text>
         <Modal presentationStyle="pageSheet" animationType="fade" transparent={false} visible={this.state.modalVisible} onRequestClose={() => this.setState({ modalVisible: false })}>
           <ViewItem
+            currentPosition={this.state.watcherPosition}
+            allItems={this.props.items}
             item={this.state.modalItem}
             onSaveItem={(item) => this.onSaveItem(item)}
             onCancel={() => this.setState({ modalVisible: false })} />
@@ -137,10 +139,47 @@ console.log('onPressMarker',this.state.onPressMarker.latitude)
           onSelectItem={(id) => this.onSelectItem(id)}/>
           <Text>{JSON.stringify(this.state.date)}</Text>
         <ActionButton
-          buttonColor="#9b59b6"
+        style={{position: 'absolute', bottom: 20}}
+          buttonColor="#00c07f"
           onPress={() => this.setState({ modalItem: { id: null, text: '', completed: false }, modalVisible: true })} />
-      
-      </View>
+       
+
+
+    {/*   <MapView 
+                  
+                  
+                  style={{ flex: 1, width: "100%", minHeight: 300 }}
+                  region={{
+                  latitude: this.state.watcherPosition.latitude,
+                  longitude: this.state.watcherPosition.longitude,
+                  latitudeDelta: 1,
+                  longitudeDelta: 1,
+                }}>
+
+                {this.props.items.map((marker, key) => (
+              
+
+                    <MapView.Marker 
+                      key={key}
+                      coordinate={marker.position}
+                      title={marker.text}
+                    />
+                  
+
+                ))}
+                {this.props.items.map((marker, key) => (
+                this.geofencing(this.state.watcherPosition.latitude, 
+                                marker.position.latitude, 
+                                this.state.watcherPosition.longitude, 
+                                marker.position.longitude,
+                                marker.text)
+                ))}
+         
+            </MapView>*/}
+
+
+
+      </ScrollView>
     );
   }
 }
@@ -157,12 +196,13 @@ Application.propTypes = {
 };
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    backgroundColor: '#F5FCFF',
-    marginTop: 22
+    // justifyContent: 'flex-start',
+    // alignItems: 'flex-start',
+    // backgroundColor: '#F5FCFF',
+    // marginTop: 22
   }
 });
 

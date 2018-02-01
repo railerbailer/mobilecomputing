@@ -43,52 +43,81 @@ class ViewItem extends Component {
         super(props);
 
         this.state = {
-            mapVisible: false,
-            databaseSave: [],
+            mapVisible: this.props.item.mapVisible || false ,
             id: this.props.item.id,
             text: this.props.item.text || '',
             completed: this.props.item.completed || false,
             date: this.props.item.date,
             deadline: null,
-             onPressMarker: {
+           
+            position: {
         
-             latitude: 48.3358,
-             longitude: 14.321, 
-
-        
-            },
+             latitude:  0,
+             longitude: 0, 
+            }, 
+            pushNotification: false,
+            
         };
     }
-    componentDidMount() {
-    this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        this.setState({
-          onPressMarker:{
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          } ,
-          error: null,
-        });
-      },
-      (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
-    );
-  }
+  //   componentWillMount() {
+  //   this.watchId = navigator.geolocation.watchPosition(
+  //     (position) => {
+  //       this.setState({
+  //         watcherPosition:{
+  //           latitude: position.coords.latitude,
+  //           longitude: position.coords.longitude,
+  //         } ,
+  //         error: null,
+  //       });
+  //     },
+  //     (error) => this.setState({ error: error.message }),
+  //     { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
+  //   );
+  // }
 
-  componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchId);
-  }
-    onFirebaseSave(){
-        this.setState({databaseSave: {id: this.state.id || uuid.v4(), text: this.state.text, completed: this.state.completed, date: this.onCreateDate() }})
+  // componentWillUnmount() {
+  //   navigator.geolocation.clearWatch(this.watchId);
+  // }
+   
+    geofencing(currentPosLat, WatcherPosLat, currentPosLong, WatcherPosLong){
+      let PlusWatcherPosLat = WatcherPosLat+0.005
+      let MinusWatcherPosLat = WatcherPosLat-0.005
+
+      let PlusWatcherPosLong = WatcherPosLong+0.005
+      let MinusWatcherPosLong = WatcherPosLong-0.005
+
+      console.log(currentPosLat, PlusWatcherPosLat)
+      console.log(currentPosLat, MinusWatcherPosLat)
+      console.log(currentPosLong, PlusWatcherPosLong)
+      console.log(currentPosLong, MinusWatcherPosLong)
+       if(currentPosLat<=PlusWatcherPosLat&&
+          currentPosLat>=MinusWatcherPosLat&&
+
+        currentPosLong<=PlusWatcherPosLong&&
+        currentPosLong>=MinusWatcherPosLong){
+        console.log('SUCCESS')
+      alert('yolo', 'yo')
+      }
+      else{
+        console.log('ERROR',WatcherPosLat, currentPosLat )
+      }
     }
-    
+      
 
  
     onSaveItem (e) {
         e.preventDefault();
         if (this.props.onSaveItem !== null) {
-           this.props.onSaveItem({ id: this.state.id || uuid.v4(), text: this.state.text, completed: this.state.completed, date: this.onCreateDate(), deadline: this.state.deadline });
-           this.onFirebaseSave(); 
+           this.props.onSaveItem({ 
+                id: this.state.id || uuid.v4(), 
+                text: this.state.text, 
+                completed: this.state.completed, 
+                date: this.onCreateDate(), 
+                deadline: this.state.deadline, 
+                position: this.state.position, 
+                mapVisible: this.state.mapVisible,
+                pushNotification: this.state.pushNotification,
+            });
            
         }
     }
@@ -106,10 +135,15 @@ class ViewItem extends Component {
         return(d);
         
     }
+  
 
     render () {
-
-        const title = !this.state.id ? 'Add New Item' : 'Show Item';
+      console.log('HEJHOPP',this.props.currentPosition.latitude)
+      console.log(this.props.currentPosition.latitude, this.state.position.latitude)
+      console.log(this.props.currentPosition.longitude, this.state.position.longitude)
+      this.geofencing(this.props.currentPosition.latitude, this.state.position.latitude, this.props.currentPosition.longitude, this.state.position.longitude)
+                
+        const title = !this.state.id ? 'Add New Item' : 'Edit Item';
         return (
             <View>
             <View style={styles.container}>
@@ -130,7 +164,7 @@ class ViewItem extends Component {
                     style={{width: 140}}
                     date={this.state.deadline}
                     mode="datetime"
-                    placeholder="select date"
+                    placeholder="select deadline"
                     format="YYYY-MM-DD"
                     minDate={new Date()}
                     maxDate="2028-06-01"
@@ -164,13 +198,19 @@ class ViewItem extends Component {
                        
                 </View>
                 <View style={styles.completed}>
-                    
+                     <Switch
+                        onTintColor='green'
+                        onValueChange={(value) => this.setState({ pushNotification: value })}
+                        value={this.state.pushNotification} />
+                        <Text style={styles.completedtext}>Add a push reminder</Text>
+                </View>
+                <View style={styles.completed}>
                     <Switch
                         onTintColor='green'
                         onValueChange={(value) => this.setState({ mapVisible: value })}
-                        value={this.state.SavePosition} />
-                        <Text style={styles.mapVisible}>Bitte</Text>
-                        
+                        value={this.state.mapVisible} />
+                        <Text style={styles.completedtext}>Add a location reminder</Text>
+                 
                        
                 </View>
                 <View style={styles.buttons}>
@@ -186,38 +226,53 @@ class ViewItem extends Component {
                 </View>
                 
             </View>
+            {this.state.mapVisible ? 
             <MapView 
-                  onPress={e => this.setState({onPressMarker: e.nativeEvent.coordinate})}
-                  style={{ flex: 1, width: "100%" }}
+                  
+                  onPress={e => this.setState({position: e.nativeEvent.coordinate})}
+                  style={{ flex: 1, width: "100%", minHeight: 300 }}
                   region={{
-                  latitude: this.state.onPressMarker.latitude,
-                  longitude: this.state.onPressMarker.longitude,
+                  latitude: this.props.currentPosition.latitude,
+                  longitude: this.props.currentPosition.longitude,
                   latitudeDelta: 0.03,
                   longitudeDelta: 0.03,
                 }}>
-            {/*  <MapView.Marker
-                
-                title={'yolo'}
-                  coordinate={{
-                    latitude: this.state.onPressMarker.latitude,
-                  longitude: this.state.onPressMarker.longitude,
-                  }}
-                />*/}
-                {this.state.mapVisible ? 
-                <MapView.Circle 
+
+                {this.props.allItems.map((marker, key) => (
+                  
+                    <MapView.Marker 
+                      key={key}
+                      coordinate={marker.position}
+                      // onPress={e => this.setState({position: e.nativeEvent.coordinate})}
+                      title={marker.text}
+                    />
+                  
+
+                ))}
+                    <MapView.Marker
+                    coordinate={{
+                  latitude: this.state.position.latitude,
+                  longitude:this.state.position.longitude,}}
+                    >
+                      
+                    </MapView.Marker>
+                  <MapView.Circle 
                 center={{
-                  latitude: this.state.onPressMarker.latitude,
-                  longitude:this.state.onPressMarker.longitude,}}
+                  latitude: this.state.position.latitude,
+                  longitude:this.state.position.longitude,}}
+
                   strokeWidth={2}
                   strokeColor='red'
                   radius={150}
                   fill='red'
                 >
                 </MapView.Circle>
+              
 
-                 : null}
+                 
 
     </MapView>
+    : null}
             </View>
         );
     }

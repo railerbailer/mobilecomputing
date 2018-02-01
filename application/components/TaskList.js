@@ -6,7 +6,8 @@ import PropTypes from 'prop-types'; // ES6
 
 const styles = StyleSheet.create({
     container: {
-        alignSelf: 'stretch'
+        alignSelf: 'stretch',
+        height: 500,
     }
 });
 
@@ -32,7 +33,7 @@ class TaskList extends Component {
       //      : 0
        a = new Date(a.deadline);
     b = new Date(b.deadline);
-    return a>b ? -1 : a<b ? 1 : 0;
+    return a<b ? -1 : a>b ? 1 : 0;
     })
   }
 
@@ -44,7 +45,12 @@ class TaskList extends Component {
                 completed: item.completed,
                 active: false,
                 date: item.date,
-                deadline: item.deadline
+                deadline: item.deadline,
+                watcherPosition: item.watcherPosition,
+                mapVisible: item.mapVisible,
+                position: item.position,
+                pushNotification: item.pushNotification,
+
             };
         });
     }
@@ -98,6 +104,7 @@ class TaskList extends Component {
         ];
         return (
             <Swipeout
+                
                 right={buttons}
                 rowID={rowID}
                 close={!item.active}
@@ -115,7 +122,9 @@ class TaskList extends Component {
         
         return (
             <View style={styles.container}>
-                <ListView dataSource={this.state.dataSource}
+                <ListView 
+                onPress={() => highlightRow(sid, rid)}
+                dataSource={this.state.dataSource}
                     renderRow={(item, sid, rid) => this.renderRow(item, sid, rid)} />
             </View>
         );

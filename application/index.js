@@ -3,13 +3,14 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 import TaskListApp from './TaskListApp';
 // import RootTabs from './navigation/Nav'
-import MapView from 'react-native-maps';
+import TabNav from './navigation/TabNavigator'
+
 
 class Application extends Component {
   render() {
     return (
       <Provider store={store}>
-        <TaskListApp />
+        <TabNav />
       </Provider>
     );
   }

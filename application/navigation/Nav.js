@@ -1,54 +1,71 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TabNavigator, TabBarBottom } from 'react-navigation';
+import { View, Text, Button } from 'react-native';
+import { DrawerNavigator } from 'react-navigation'; // 1.0.0-beta.14
+import Ionicons from 'react-native-vector-icons/Ionicons'; // Supported builtin module
+import Application from '../TaskListApp'
+import MapView from '../components/MapView'
+import TheHeader from '../components/Header'
 
-const OverviewScreen = () => (
-  <View style={styles.tab}>
-    <Text></Text>
-  </View>
-); 
- 
-const NotesScreen = () => (
+const HomeScreen = () => (
   <View>
-  	<Text></Text>
+  <TheHeader/>
+    <MapView/>
   </View>
-);   
+);
 
-const RemindersScreen = () => (
-  <View style={styles.tab}>
-    <Text></Text>
+const ProfileScreen = (navigation) => (
+  <View>
+    <TheHeader/>
+    <Button
+      onPress={() => navigation.navigate('DrawerToggle')}
+      title="Open Drawer"
+    />
+    <Application/>
   </View>
 );
 
 
-export const RootTabs = TabNavigator({ 
-  Overview: {
-    screen: OverviewScreen,
+
+const RootDrawer = DrawerNavigator({
+  ble: {
+    screen: ble,
+    navigationOptions: {
+      drawerLabel: 'ble',
+      // drawerIcon: ({ tintColor, focused }) => (
+      //   <Ionicons
+      //     name={focused ? 'ios-home' : 'ios-home-outline'}
+      //     size={26}
+      //     style={{ color: tintColor }}
+      //   />
+      // ),
+    },
   },
-  Notes: {
-    screen: NotesScreen,
+  Home: {
+    screen: HomeScreen,
+    navigationOptions: {
+      drawerLabel: 'Home',
+      // drawerIcon: ({ tintColor, focused }) => (
+      //   <Ionicons
+      //     name={focused ? 'ios-home' : 'ios-home-outline'}
+      //     size={26}
+      //     style={{ color: tintColor }}
+      //   />
+      // ),
+    },
   },
-  Reminders: {
-    screen: RemindersScreen,
-
-  }
-
-},
-
-{
-  
-    tabBarComponent: TabBarBottom,
-    tabBarPosition: 'bottom',
-    showIcon: true,
+  Profile: {
+    screen: ProfileScreen,
+    navigationOptions: {
+      drawerLabel: 'Profile',
+      drawerIcon: ({ tintColor, focused }) => (
+        <Ionicons
+          name={focused ? 'ios-person' : 'ios-person-outline'}
+          size={26}
+          style={{ color: tintColor }}
+        />
+      ),
+    },
+  },
 });
 
-
-const styles = StyleSheet.create({
-  tab:{
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'center' 
-  },
-});
-export default RootTabs;
-
+export default RootDrawer;

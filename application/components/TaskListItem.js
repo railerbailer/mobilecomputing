@@ -11,12 +11,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         borderBottomWidth: 1,
-        borderColor: '#404040'
+        borderColor: '#00c07f',
+        backgroundColor: 'white'
     },
 
     textcontainer: {
         maxWidth: '90%',
-        padding: 4,
+        padding: 20,
     },
 
     cbcontainer: {
@@ -78,7 +79,7 @@ class TaskListItem extends Component {
                         <Text style={[styles.itemtext, this.item.completed && styles.completed]}>{this.item.text}</Text>
                     </TouchableHighlight>
                     <Text style={styles.idtext}>Deadline:{JSON.stringify(this.item.deadline)}</Text>
-                    <Text style={styles.idtext}>{this.item.id}</Text>
+                    {/*<Text style={styles.idtext}>{this.item.id}</Text>*/}
                 </View>
                 <View style={styles.cbcontainer}>
 
